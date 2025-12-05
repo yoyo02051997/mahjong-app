@@ -12,18 +12,14 @@
   <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#0f172a" />
 
-  <!-- 內建 App Icon (發財麻將) -->
+  <!-- 內建 App Icon -->
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZC1jb2xvcjogIzAyMDYxNzsiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiByeT0iMTI4IiBmaWxsPSIjMDY0ZTNiIi8+PHBhdGggZD0iTTI1NiA2NEMxNTAgNjQgNjQgMTUwIDY0IDI1NnM4NiAxOTIgMTkyIDE5MiAxOTItODYgMTkyLTE5MlMzNjIgNjQgMjU2IDY0em0wIDMyYzEyIDAgMjIgOCAyNiAxOGw0IDExLjkgNS42LTE2LjdjNC0xMiAxNS4yLTIwLjEgMjcuOS0yMC4xIDE2LjYgMCAzMC4xIDEzLjUgMzAuMSAzMC4xIDAgNS43LTEuNiAxMS4xLTQuNCAxNS44TDMwNy41IDMwMmgyMC45YzE2LjYgMCAzMC4xIDEzLjUgMzAuMSAzMC4xUzM0NC45IDM2MiAzMjguNCAzNjJIMTgzLjZjLTE2LjYgMC0zMC4xLTEzLjUtMzAuMS0zMC4xUyAxNjcuMSAzMDIgMTgzLjYgMzAyaDI0LjVMMTcxLjEgMTM1LjFjLTIuOC00LjctNC40LTEwLjEtNC40LTE1LjggMC0xNi42IDEzLjUtMzAuMSAzMC4xLTMwLjEgMTIuNyAwIDI0IDguMSAyNy45IDIwLjFsNS42IDE2LjcgNC0xMS45YzQtMTAgMTQtMTggMjYuMS0xOHoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMjU2IDExNGMtNS4zIDAtOS45IDMuNS0xMS42IDguM0wyMTAuNyAyMDloOTAuNmwtMzMuNy04Ni43Yy0xLjctNC44LTYuMy04LjMtMTEuNi04LjN6IiBmaWxsPSIjMDU5NjY5Ii8+PC9zdmc+" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
-    /* iOS 全螢幕優化與防抖動 */
-    html {
-        background-color: #000;
-        height: 100%;
-        overscroll-behavior-y: none;
-    }
+    /* iOS 全螢幕優化 */
+    html { background-color: #000; height: 100%; overscroll-behavior-y: none; }
     body {
       margin: 0;
       background: radial-gradient(circle at top, #1f2937 0%, #020617 50%, #000 100%);
@@ -35,19 +31,11 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-
-    input {
-      -webkit-user-select: text;
-      user-select: text;
-    }
-
-    /* 隱藏數字輸入框箭頭 */
+    input { -webkit-user-select: text; user-select: text; }
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
-
     ::-webkit-scrollbar { width: 0px; background: transparent; }
-    
     .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -108,10 +96,7 @@
                     </span>
                     <span>{{ defaultSeats[idx] }}</span>
                   </span>
-                  <span v-if="idx === currentDealerIndex"
-                        class="text-[10px] text-amber-400 font-bold">
-                    莊
-                  </span>
+                  <span v-if="idx === currentDealerIndex" class="text-[10px] text-amber-400 font-bold">莊</span>
                 </div>
                 <input v-model="p.name" type="text" maxlength="8"
                        class="mt-0.5 w-full bg-transparent border-b border-slate-600/50 py-1 text-sm text-white focus:outline-none focus:border-emerald-400 placeholder-slate-600"
@@ -176,7 +161,7 @@
           </div>
         </section>
 
-        <!-- 3. 新局輸入 (修正鍵盤與 +/- 按鈕) -->
+        <!-- 3. 新局輸入 -->
         <section class="bg-slate-900/60 backdrop-blur-md border border-slate-800/60 rounded-2xl p-4 space-y-4 shadow-sm ring-1 ring-emerald-500/20">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold flex items-center gap-2 text-slate-100">
@@ -201,7 +186,6 @@
               </div>
               
               <div class="flex items-center gap-2">
-                <!-- 移除了 pattern="[0-9]*" 以恢復負號，但建議直接用旁邊按鈕 -->
                 <div class="relative flex-1">
                    <input v-model.number="roundDeltas[idx]" type="number" inputmode="decimal"
                          class="w-full bg-slate-900/60 border border-slate-600/50 rounded-lg pl-2 pr-6 py-2 text-right text-lg font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder-slate-700"
@@ -209,8 +193,6 @@
                          placeholder="0"/>
                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 pointer-events-none">台</span>
                 </div>
-
-                <!-- 這裡新增 +/- 快速切換按鈕 -->
                 <button type="button" @click="toggleSign(idx)"
                         class="w-10 h-10 flex-none rounded-lg border border-slate-600/50 flex items-center justify-center text-sm font-bold transition active:scale-95"
                         :class="Number(roundDeltas[idx]) < 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'">
@@ -239,10 +221,15 @@
         <section class="space-y-3 pb-8">
           <div class="flex items-center justify-between px-1">
             <h2 class="text-sm font-bold text-slate-400">歷史紀錄 ({{ rounds.length }})</h2>
+            
+            <!-- 新增：清除紀錄按鈕 -->
+            <button @click="resetGame" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/20 active:scale-95 transition">
+               <span>🗑️ 清除紀錄 / 新局</span>
+            </button>
           </div>
 
           <div v-if="rounds.length === 0" class="text-center py-8 text-slate-600 text-xs border border-dashed border-slate-800 rounded-xl">
-            暫無紀錄，請開始第一局
+            紀錄會自動儲存，隨時可關閉視窗
           </div>
 
           <div class="space-y-3">
@@ -286,7 +273,9 @@
 </div>
 
 <script>
-const { createApp } = Vue;
+const { createApp, watch } = Vue;
+
+const STORAGE_KEY = 'mahjong-score-v9';
 
 createApp({
   data() {
@@ -311,6 +300,26 @@ createApp({
       roundWindIndex: 0,
     };
   },
+  mounted() {
+    // 讀取存檔
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        this.players = data.players;
+        this.currentDealerIndex = data.currentDealerIndex;
+        this.dealerStreak = data.dealerStreak;
+        this.base = data.base;
+        this.rate = data.rate;
+        this.rounds = data.rounds;
+        this.roundCounter = data.roundCounter;
+        this.roundWindIndex = data.roundWindIndex;
+        this.showSettings = data.showSettings;
+      } catch (e) {
+        console.error('Save file corrupt');
+      }
+    }
+  },
   computed: {
     totalMoney() {
       return this.players.reduce((sum, p) => sum + this.moneyOf(p), 0);
@@ -323,17 +332,37 @@ createApp({
     }
   },
   methods: {
+    // 新增：重置遊戲
+    resetGame() {
+        if(!confirm('確定要清除所有紀錄並開始新局嗎？(無法復原)')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+    },
+    saveData() {
+        const data = {
+            players: this.players,
+            currentDealerIndex: this.currentDealerIndex,
+            dealerStreak: this.dealerStreak,
+            base: this.base,
+            rate: this.rate,
+            rounds: this.rounds,
+            roundCounter: this.roundCounter,
+            roundWindIndex: this.roundWindIndex,
+            showSettings: this.showSettings
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    },
     toggleSettings() {
       this.showSettings = !this.showSettings;
+      this.saveData();
     },
     resetCurrentInputs() {
       this.roundDeltas = ['', '', '', ''];
       this.roundError = '';
     },
-    // 新增：快速切換正負號的功能
     toggleSign(idx) {
       const val = Number(this.roundDeltas[idx]);
-      if (!val && val !== 0) return; // 如果是空的就不動作
+      if (!val && val !== 0) return; 
       if (val === 0) return; 
       this.roundDeltas[idx] = val * -1;
     },
@@ -474,7 +503,7 @@ createApp({
 
       let action = 'stay';
       if (type === 'draw') {
-        action = 'stay';
+        action = 'stay'; 
       } else if (winnerIndex === this.currentDealerIndex) {
         action = 'stay'; 
       } else {
@@ -528,11 +557,13 @@ createApp({
       if (this.roundCounter === 1) {
           this.showSettings = false;
       }
+      this.saveData(); // 儲存
     },
     confirmDelete(roundId) {
       if (!confirm('刪除此局將重新計算後續所有分數與莊家順序，確定？')) return;
       this.rounds = this.rounds.filter(r => r.id !== roundId);
       this.recalcAllFromHistory();
+      this.saveData(); // 儲存
     },
     recalcAllFromHistory() {
       this.players.forEach(p => {
@@ -579,6 +610,12 @@ createApp({
       this.roundCounter = roundNumber;
       this.rounds = sorted;
     }
+  },
+  watch: {
+    // 監聽任何變動自動存檔 (改名、改錢、任何操作)
+    players: { handler() { this.saveData(); }, deep: true },
+    base() { this.saveData(); },
+    rate() { this.saveData(); }
   }
 }).mount('#app');
 </script>
