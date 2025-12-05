@@ -1,0 +1,593 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>台灣麻將計分</title>
+
+  <!-- iOS / PWA 核心設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="台麻計分">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#0f172a" />
+
+  <!-- 內建 App Icon (發財麻將) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZC1jb2xvcjogIzAyMDYxNzsiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiByeT0iMTI4IiBmaWxsPSIjMDY0ZTNiIi8+PHBhdGggZD0iTTI1NiA2NEMxNTAgNjQgNjQgMTUwIDY0IDI1NnM4NiAxOTIgMTkyIDE5MiAxOTItODYgMTkyLTE5MlMzNjIgNjQgMjU2IDY0em0wIDMyYzEyIDAgMjIgOCAyNiAxOGw0IDExLjkgNS42LTE2LjdjNC0xMiAxNS4yLTIwLjEgMjcuOS0yMC4xIDE2LjYgMCAzMC4xIDEzLjUgMzAuMSAzMC4xIDAgNS43LTEuNiAxMS4xLTQuNCAxNS44TDMwNy41IDMwMmgyMC45YzE2LjYgMCAzMC4xIDEzLjUgMzAuMSAzMC4xUzM0NC45IDM2MiAzMjguNCAzNjJIMTgzLjZjLTE2LjYgMC0zMC4xLTEzLjUtMzAuMS0zMC4xUyAxNjcuMSAzMDIgMTgzLjYgMzAyaDI0LjVMMTcxLjEgMTM1LjFjLTIuOC00LjctNC40LTEwLjEtNC40LTE1LjggMC0xNi42IDEzLjUtMzAuMSAzMC4xLTMwLjEgMTIuNyAwIDI0IDguMSAyNy45IDIwLjFsNS42IDE2LjcgNC0xMS45YzQtMTAgMTQtMTggMjYuMS0xOHoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMjU2IDExNGMtNS4zIDAtOS45IDMuNS0xMS42IDguM0wyMTAuNyAyMDloOTAuNmwtMzMuNy04Ni43Yy0xLjctNC44LTYuMy04LjMtMTEuNi04LjN6IiBmaWxsPSIjMDU5NjY5Ii8+PC9zdmc+" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    /* iOS 全螢幕優化與防抖動 */
+    html {
+        background-color: #000;
+        height: 100%;
+        overscroll-behavior-y: none; /* 防止 iOS 列表拉過頭的回彈 */
+    }
+    body {
+      margin: 0;
+      /* 背景漸層 */
+      background: radial-gradient(circle at top, #1f2937 0%, #020617 50%, #000 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      /* 支援瀏海 (Notch) */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      min-height: 100%;
+      /* 禁止選取文字，讓感覺更像 App */
+      -webkit-user-select: none;
+      user-select: none;
+      /* 移除 iOS 點擊灰色高亮 */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 輸入框輸入時允許選取 */
+    input {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* 隱藏數字輸入框的上下箭頭 */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    /* 自定義滾動條 (隱藏但可滾動) */
+    ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+    }
+  </style>
+</head>
+<body>
+<div id="app" class="min-h-full flex justify-center">
+  <div class="w-full max-w-md bg-transparent sm:bg-slate-900/95 text-slate-50 sm:shadow-xl sm:rounded-[2rem] sm:border border-slate-800/80 overflow-hidden flex flex-col sm:my-4">
+
+    <!-- Header -->
+    <header class="px-5 py-4 bg-gradient-to-r from-emerald-600/90 to-teal-600/90 text-white shadow-lg backdrop-blur-sm sticky top-0 z-10">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.2em] opacity-70">Taiwan Mahjong</div>
+          <h1 class="text-xl font-bold mt-0.5 flex items-center gap-2 shadow-black/20 drop-shadow-md">
+            台麻計分
+            <span class="inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-normal">PWA</span>
+          </h1>
+          <div class="mt-1 text-xs text-emerald-50 font-medium">
+            目前：<span class="text-amber-300">{{ currentWindText }}</span>
+          </div>
+        </div>
+        <div class="text-right text-xs leading-snug opacity-90 font-medium bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
+          <div>莊家：
+            <span class="text-amber-300">
+              {{ players[currentDealerIndex].name || '玩家 ' + (currentDealerIndex + 1) }}
+            </span>
+          </div>
+          <div class="mt-0.5">莊況：
+            <span class="text-amber-300">{{ streakLabel(dealerStreak) }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="bg-transparent flex-1 overflow-y-auto pb-10">
+      <div class="px-4 py-4 space-y-4">
+
+        <!-- 1. 玩家設定 -->
+        <section class="bg-slate-900/60 backdrop-blur-md border border-slate-800/60 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-slate-100">
+              <span class="inline-flex w-5 h-5 items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-xs font-bold">1</span>
+              玩家與金額設定
+            </h2>
+            <button @click="toggleSettings" class="text-[11px] text-emerald-400 underline decoration-dotted underline-offset-4">
+              {{ showSettings ? '收合' : '展開' }}
+            </button>
+          </div>
+
+          <div v-show="showSettings" class="space-y-3 pt-1 animate-fade-in">
+            <div class="grid grid-cols-2 gap-2.5">
+              <div v-for="(p, idx) in players" :key="'player-input-' + idx" class="bg-slate-800/50 rounded-xl px-2.5 py-2 flex flex-col gap-1 border border-white/5">
+                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                  <span class="flex items-center gap-1.5">
+                    <span class="inline-flex w-4 h-4 items-center justify-center rounded-full text-[10px] font-bold"
+                          :class="idx === currentDealerIndex ? 'bg-amber-400 text-slate-900' : 'bg-slate-600 text-slate-200'">
+                      {{ idx + 1 }}
+                    </span>
+                    <span>{{ defaultSeats[idx] }}</span>
+                  </span>
+                  <span v-if="idx === currentDealerIndex"
+                        class="text-[10px] text-amber-400 font-bold">
+                    莊
+                  </span>
+                </div>
+                <!-- inputmode="text" for names -->
+                <input v-model="p.name" type="text" maxlength="8"
+                       class="mt-0.5 w-full bg-transparent border-b border-slate-600/50 py-1 text-sm text-white focus:outline-none focus:border-emerald-400 placeholder-slate-600"
+                       :placeholder="'玩家 ' + (idx + 1)"/>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-2 border-t border-slate-700/50">
+              <div class="flex-1">
+                <label class="block text-[10px] text-slate-400 mb-1">底（元）</label>
+                <div class="flex items-center gap-2 bg-slate-800/50 rounded-lg px-2 py-1 border border-white/5">
+                  <input v-model.number="base" type="number" pattern="[0-9]*" inputmode="decimal"
+                         class="w-full bg-transparent text-center font-mono text-lg text-emerald-300 focus:outline-none"/>
+                </div>
+              </div>
+              <div class="flex-1">
+                <label class="block text-[10px] text-slate-400 mb-1">台（元）</label>
+                <div class="flex items-center gap-2 bg-slate-800/50 rounded-lg px-2 py-1 border border-white/5">
+                  <input v-model.number="rate" type="number" pattern="[0-9]*" inputmode="decimal"
+                         class="w-full bg-transparent text-center font-mono text-lg text-emerald-300 focus:outline-none"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 總分儀表板 -->
+        <section class="bg-slate-900/60 backdrop-blur-md border border-slate-800/60 rounded-2xl p-4 space-y-3 shadow-sm">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-slate-100">
+              <span class="inline-flex w-5 h-5 items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-xs font-bold">2</span>
+              總結算
+            </h2>
+            <div class="text-[10px] text-slate-400">
+              總和檢查：<span :class="totalMoney === 0 ? 'text-emerald-400' : 'text-rose-400 font-bold'">{{ totalMoney }}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div v-for="(p, idx) in players" :key="'player-summary-' + idx"
+                 class="relative rounded-xl px-3 py-2.5 border flex flex-col gap-1 overflow-hidden"
+                 :class="idx === currentDealerIndex ? 'border-amber-500/50 bg-amber-500/10' : 'border-slate-700/50 bg-slate-800/30'">
+
+              <div class="flex items-center justify-between text-[11px] relative z-10">
+                <div class="font-medium text-slate-200 truncate w-20">{{ p.name || '玩家 ' + (idx + 1) }}</div>
+                <div class="text-[10px] opacity-60">{{ defaultSeats[idx] }}</div>
+              </div>
+
+              <div class="flex items-end justify-between mt-1 relative z-10">
+                <div class="text-[10px] text-slate-400">
+                  <span class="block text-[9px] opacity-70">台數</span>
+                  <span :class="p.totalTai >= 0 ? 'text-slate-200' : 'text-rose-300'">{{ formatSigned(p.totalTai) }}</span>
+                </div>
+                <div class="text-right">
+                  <span class="block text-[9px] text-slate-400 opacity-70">金額</span>
+                  <span :class="moneyOf(p) >= 0 ? 'text-emerald-300' : 'text-rose-300'" class="font-bold text-base font-mono leading-none">
+                    {{ formatSigned(moneyOf(p)) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. 新局輸入 -->
+        <section class="bg-slate-900/60 backdrop-blur-md border border-slate-800/60 rounded-2xl p-4 space-y-4 shadow-sm ring-1 ring-emerald-500/20">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-slate-100">
+              <span class="inline-flex w-5 h-5 items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-xs font-bold">3</span>
+              本局計分
+            </h2>
+            <button @click="resetCurrentInputs" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">清空</button>
+          </div>
+
+          <p v-if="roundError" class="animate-pulse text-xs text-amber-200 bg-amber-900/40 border border-amber-500/30 rounded-lg px-3 py-2 flex items-center gap-2">
+            ⚠️ {{ roundError }}
+          </p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div v-for="(p, idx) in players" :key="'round-input-' + idx"
+                 class="bg-slate-800/40 rounded-xl p-2.5 flex flex-col border transition-colors duration-200"
+                 :class="Number(roundDeltas[idx]) > 0 ? 'border-emerald-500/50 bg-emerald-900/10' : (Number(roundDeltas[idx]) < 0 ? 'border-rose-500/50 bg-rose-900/10' : 'border-slate-700/30')">
+
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-medium text-slate-300">{{ p.name || '玩家 ' + (idx + 1) }}</span>
+                <span v-if="idx === currentDealerIndex" class="text-[10px] text-amber-400">莊</span>
+              </div>
+
+              <div class="relative">
+                <input v-model.number="roundDeltas[idx]" type="number" pattern="[0-9-]*" inputmode="decimal"
+                       class="w-full bg-slate-900/60 border border-slate-600/50 rounded-lg px-2 py-2 text-right text-lg font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder-slate-700"
+                       :class="Number(roundDeltas[idx]) > 0 ? 'text-emerald-300' : (Number(roundDeltas[idx]) < 0 ? 'text-rose-300' : 'text-slate-400')"
+                       placeholder="0"/>
+                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 pointer-events-none">台</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-[10px] text-slate-400 text-center -mt-1">
+            * 贏家填正數 (如 3)，放槍者填負數 (如 -3)，其餘 0
+          </div>
+
+          <div class="pt-2">
+             <button type="button" @click="addRound"
+                  class="w-full inline-flex items-center justify-center rounded-xl px-4 py-3.5 text-base font-bold tracking-wide
+                         bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-900/20
+                         active:scale-[0.97] transition-transform duration-100 touch-manipulation">
+            記錄本局 (自動連莊)
+          </button>
+          </div>
+        </section>
+
+        <!-- 4. 歷史紀錄 -->
+        <section class="space-y-3 pb-8">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-sm font-bold text-slate-400">歷史紀錄 ({{ rounds.length }})</h2>
+          </div>
+
+          <div v-if="rounds.length === 0" class="text-center py-8 text-slate-600 text-xs border border-dashed border-slate-800 rounded-xl">
+            暫無紀錄，請開始第一局
+          </div>
+
+          <div class="space-y-3">
+            <transition-group name="list">
+            <div v-for="(r, index) in reversedRounds" :key="r.id"
+                 class="relative bg-slate-900/40 border border-slate-800/60 rounded-xl p-3 backdrop-blur-sm">
+
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono text-slate-500">#{{ r.roundNumber }}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-emerald-500/20">{{ r.windText }}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-400 border border-amber-500/20">
+                     莊:{{ r.dealerName }} ({{ streakLabel(r.streak) }})
+                  </span>
+                </div>
+                <button @click="confirmDelete(r.id)" class="text-slate-600 hover:text-rose-400 p-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="text-sm font-medium text-slate-200 pl-1 border-l-2" 
+                   :class="r.type === 'draw' ? 'border-slate-600' : 'border-emerald-500'">
+                {{ outcomeText(r) }}
+              </div>
+
+              <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500 pl-1">
+                 <span>{{ r.time }}</span>
+                 <span v-if="r.note" class="italic opacity-70">{{ r.note }}</span>
+              </div>
+
+            </div>
+            </transition-group>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      showSettings: true,
+      defaultSeats: ['東', '南', '西', '北'],
+      players: [
+        { name: '', totalTai: 0, totalMoney: 0 },
+        { name: '', totalTai: 0, totalMoney: 0 },
+        { name: '', totalTai: 0, totalMoney: 0 },
+        { name: '', totalTai: 0, totalMoney: 0 },
+      ],
+      currentDealerIndex: 0,
+      dealerStreak: 1,
+      base: 30, // Default changed to typical Taiwan value
+      rate: 10,
+      roundDeltas: ['', '', '', ''], // Changed to empty strings for better placeholder UX
+      roundNote: '',
+      rounds: [],
+      roundError: '',
+      roundCounter: 0,
+      roundWindIndex: 0,
+    };
+  },
+  mounted() {
+    // Try to restore from localStorage if needed, or simple init
+    // For this strict request, we keep it simple.
+  },
+  computed: {
+    totalMoney() {
+      return this.players.reduce((sum, p) => sum + this.moneyOf(p), 0);
+    },
+    reversedRounds() {
+      return [...this.rounds].reverse();
+    },
+    currentWindText() {
+      return this.getWindText(this.roundWindIndex, this.currentDealerIndex);
+    }
+  },
+  methods: {
+    toggleSettings() {
+      this.showSettings = !this.showSettings;
+    },
+    resetCurrentInputs() {
+      this.roundDeltas = ['', '', '', ''];
+      this.roundError = '';
+    },
+    getWindText(windIndex, dealerIndex) {
+      const winds = ['東', '南', '西', '北'];
+      const seats = ['東', '南', '西', '北'];
+      return `${winds[windIndex]}風${seats[dealerIndex]}`;
+    },
+    streakLabel(s) {
+      const n = Number(s) || 1;
+      return n <= 1 ? '上莊' : `連${n - 1}`;
+    },
+    moneyOf(player) {
+      return Number(player.totalMoney) || 0;
+    },
+    formatSigned(n) {
+      const num = Number(n) || 0;
+      return (num > 0 ? '+' : '') + num;
+    },
+    outcomeText(r) {
+      if (r.type === 'draw') return '臭莊 / 流局';
+      const tai = r.taiPerLoser != null ? r.taiPerLoser : 0;
+      if (r.type === 'tsumo') {
+        const wIdx = r.winnerIndex;
+        if (wIdx == null) return `自摸 ${tai} 台`;
+        const wName = this.players[wIdx]?.name || ('玩家 ' + (wIdx + 1));
+        return `${wName} 自摸 ${tai} 台`;
+      }
+      if (r.type === 'ron') {
+        const wIdx = r.winnerIndex;
+        const lIdx = (r.loserIndices && r.loserIndices.length) ? r.loserIndices[0] : null;
+        const wName = wIdx != null ? (this.players[wIdx]?.name || ('玩家 ' + (wIdx + 1))) : '贏家';
+        const lName = lIdx != null ? (this.players[lIdx]?.name || ('玩家 ' + (lIdx + 1))) : '放槍者';
+        return `${lName} 放槍給 ${wName} ${tai} 台`;
+      }
+      return '';
+    },
+    addRound() {
+      this.roundError = '';
+
+      const rawTai = this.roundDeltas.map(v => Number(v) || 0);
+      const nonZeroIndices = rawTai
+        .map((v, idx) => ({ v, idx }))
+        .filter(x => x.v !== 0)
+        .map(x => x.idx);
+
+      const now = new Date();
+      const timeString = now.toLocaleString('zh-TW', {
+        hour12: false,
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const currentWindIndex = this.roundWindIndex;
+      const currentWindText = this.currentWindText;
+      const streakForThisRound = this.dealerStreak;
+
+      let taiDeltas = [0, 0, 0, 0];
+      let moneyDeltas = [0, 0, 0, 0];
+      let autoNote = '';
+      let type = 'draw';
+      let winnerIndex = null;
+      let loserIndices = [];
+      let taiPerLoser = 0;
+
+      // Logic: Draw
+      if (nonZeroIndices.length === 0) {
+        autoNote = '流局';
+        type = 'draw';
+      } else {
+        const positiveIndices = [];
+        for (let i = 0; i < rawTai.length; i++) {
+          if (rawTai[i] > 0) positiveIndices.push(i);
+        }
+
+        if (positiveIndices.length === 0) {
+          this.roundError = '贏家必須輸入正數台數';
+          return;
+        }
+        if (positiveIndices.length > 1) {
+          this.roundError = '不支援一炮多響，請分開輸入';
+          return;
+        }
+
+        const wIdx = positiveIndices[0];
+        const winnerTaiPerLoser = rawTai[wIdx];
+
+        const loserNegIndices = [];
+        for (let i = 0; i < this.players.length; i++) {
+          if (i === wIdx) continue;
+          if (rawTai[i] < 0) loserNegIndices.push(i);
+        }
+        let losers = [];
+        if (loserNegIndices.length > 0) {
+          losers = loserNegIndices;
+        } else {
+          // If no explicitly negative inputs, assume all others lost (Self-drawn)
+          for (let i = 0; i < this.players.length; i++) {
+            if (i !== wIdx) losers.push(i);
+          }
+        }
+
+        if (!losers.length) {
+          this.roundError = '無輸家';
+          return;
+        }
+
+        const baseMoney = Number(this.base) || 0;
+        const rateMoney = Number(this.rate) || 0;
+        const perPairTai = winnerTaiPerLoser;
+        const moneyPerPair = baseMoney + perPairTai * rateMoney;
+
+        taiPerLoser = perPairTai;
+
+        // Calc Scores
+        taiDeltas = this.players.map(() => 0);
+        taiDeltas[wIdx] = perPairTai * losers.length;
+        losers.forEach(i => { taiDeltas[i] = -perPairTai; });
+
+        moneyDeltas = this.players.map(() => 0);
+        moneyDeltas[wIdx] = moneyPerPair * losers.length;
+        losers.forEach(i => { moneyDeltas[i] = -moneyPerPair; });
+
+        const winnerName = this.players[wIdx].name || ('玩家 ' + (wIdx + 1));
+        const loserNames = losers.map(i => this.players[i].name || ('玩家 ' + (i + 1)));
+
+        winnerIndex = wIdx;
+        loserIndices = losers;
+
+        if (losers.length === 1) {
+          const loserName = loserNames[0];
+          type = 'ron';
+          autoNote = `${loserName} 放槍 ${perPairTai} 台`;
+        } else {
+          type = 'tsumo';
+          autoNote = `自摸 ${perPairTai} 台`;
+        }
+      }
+
+      // Dealer Logic
+      let action = 'stay';
+      if (type === 'draw') {
+        action = 'stay'; // Taiwan mahjong typically stays on draw
+      } else if (winnerIndex === this.currentDealerIndex) {
+        action = 'stay'; // Dealer won
+      } else {
+        action = 'next'; // Dealer lost
+      }
+
+      // Apply
+      this.players.forEach((p, idx) => {
+        p.totalTai = Number(p.totalTai) + (taiDeltas[idx] || 0);
+        p.totalMoney = Number(p.totalMoney) + (moneyDeltas[idx] || 0);
+      });
+
+      this.roundCounter += 1;
+
+      this.rounds.push({
+        id: now.getTime(),
+        roundNumber: this.roundCounter,
+        taiDeltas,
+        moneyDeltas,
+        rawTai,
+        taiPerLoser,
+        note: autoNote,
+        dealerIndex: this.currentDealerIndex,
+        dealerName: this.players[this.currentDealerIndex].name || ('玩家 ' + (this.currentDealerIndex + 1)),
+        action,
+        time: timeString,
+        timeValue: now.getTime(),
+        windIndex: currentWindIndex,
+        windText: currentWindText,
+        type,
+        winnerIndex,
+        loserIndices,
+        streak: streakForThisRound,
+      });
+
+      // Advance Dealer
+      if (action === 'stay') {
+        this.dealerStreak += 1;
+      } else if (action === 'next') {
+        const oldDealer = this.currentDealerIndex;
+        if (oldDealer === this.players.length - 1) {
+          this.currentDealerIndex = 0;
+          if (this.roundWindIndex < 3) {
+            this.roundWindIndex += 1;
+          }
+        } else {
+          this.currentDealerIndex = oldDealer + 1;
+        }
+        this.dealerStreak = 1;
+      }
+
+      // Reset Inputs
+      this.resetCurrentInputs();
+
+      // Auto collapse settings to save space after first round
+      if (this.roundCounter === 1) {
+          this.showSettings = false;
+      }
+    },
+    confirmDelete(roundId) {
+      if (!confirm('刪除此局將重新計算後續所有分數與莊家順序，確定？')) return;
+      this.rounds = this.rounds.filter(r => r.id !== roundId);
+      this.recalcAllFromHistory();
+    },
+    recalcAllFromHistory() {
+      // Reset State
+      this.players.forEach(p => {
+        p.totalTai = 0;
+        p.totalMoney = 0;
+      });
+      let dealerIndex = 0;
+      let streak = 1;
+      let windIndex = 0;
+      let roundNumber = 0;
+
+      const sorted = [...this.rounds].sort((a, b) => a.timeValue - b.timeValue);
+
+      for (const r of sorted) {
+        roundNumber += 1;
+        r.roundNumber = roundNumber;
+        r.dealerIndex = dealerIndex;
+        r.windIndex = windIndex;
+        r.windText = this.getWindText(windIndex, dealerIndex);
+        r.dealerName = this.players[dealerIndex].name || ('玩家 ' + (dealerIndex + 1));
+        r.streak = streak;
+
+        // Apply Score
+        this.players.forEach((p, idx) => {
+          p.totalTai += r.taiDeltas[idx] || 0;
+          p.totalMoney += r.moneyDeltas[idx] || 0;
+        });
+
+        // Advance
+        if (r.action === 'stay') {
+          streak += 1;
+        } else if (r.action === 'next') {
+          if (dealerIndex === this.players.length - 1) {
+            dealerIndex = 0;
+            if (windIndex < 3) windIndex += 1;
+          } else {
+            dealerIndex++;
+          }
+          streak = 1;
+        }
+      }
+
+      // Restore current state
+      this.currentDealerIndex = dealerIndex;
+      this.roundWindIndex = windIndex;
+      this.dealerStreak = streak;
+      this.roundCounter = roundNumber;
+      this.rounds = sorted;
+    }
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
